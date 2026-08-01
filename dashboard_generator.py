@@ -889,12 +889,354 @@ function renderAlerts() {{
             html += `</div></div>`;
         }}
 
+        // ====== 五阶深度逻辑引擎 ======
+        if (a.deep_logic) {{
+            html += `<div class="signals-section" style="margin-top:4px;">
+                <div class="signals-header" onclick="toggleSection(this)">&#x25BC; 五阶深度逻辑引擎 (SOTP/隐含预期/期权/博弈/时间墙)</div>
+                <div class="toggle-body" style="display:none;">`;
+            const dl = a.deep_logic;
+            // SOTP
+            if (dl.sotp) {{
+                const s = dl.sotp;
+                html += `<div style="font-size:10px;font-weight:600;color:var(--text-muted);padding:4px 0 2px;">&#x1F4CA; SOTP 分部重估</div>
+                <div class="data-snapshot" style="grid-template-columns:repeat(3,1fr);margin-bottom:2px;">
+                    <div class="data-item"><div class="data-item-label">加权PE</div><div class="data-item-value">${{s.weighted_pe||'N/A'}}x</div></div>
+                    <div class="data-item"><div class="data-item-label">成长段PE</div><div class="data-item-value">${{s.growth_pe||'N/A'}}x</div></div>
+                    <div class="data-item"><div class="data-item-label">周期段PE</div><div class="data-item-value">${{s.cycle_pe||'N/A'}}x</div></div>
+                </div>`;
+                if (s.segments && s.segments.length) {{
+                    html += `<div style="font-size:10px;color:var(--text-secondary);padding:2px 4px;background:#f8f9fb;border-radius:3px;margin-bottom:4px;">`;
+                    s.segments.forEach(seg => {{
+                        html += `<div>&#x2022; ${{seg.name||''}}: PE=${{seg.pe||'N/A'}}x, 权重=${{seg.weight||'N/A'}}%</div>`;
+                    }});
+                    html += `</div>`;
+                }}
+                if (s.summary) {{
+                    html += `<div style="font-size:10px;color:var(--text-secondary);padding:2px 4px;background:#f0f4ff;border-radius:3px;border-left:2px solid var(--blue);margin-bottom:4px;">${{s.summary}}</div>`;
+                }}
+            }}
+            // 隐含预期
+            if (dl.implied_expectation) {{
+                const ie = dl.implied_expectation;
+                const ieCls = ie.level === '高' ? 'signal-danger' : ie.level === '中' ? 'signal-warning' : 'signal-success';
+                html += `<div style="font-size:10px;font-weight:600;color:var(--text-muted);padding:4px 0 2px;margin-top:2px;">&#x1F50D; 隐含预期解码</div>
+                <div class="data-snapshot" style="grid-template-columns:repeat(2,1fr);margin-bottom:2px;">
+                    <div class="data-item"><div class="data-item-label">预期难度</div><div class="data-item-value ${{ieCls}}">${{ie.level||'N/A'}}</div></div>
+                    <div class="data-item"><div class="data-item-label">脆弱环节</div><div class="data-item-value" style="font-size:10px;">${{ie.weakest_link||'N/A'}}</div></div>
+                </div>`;
+                if (ie.required_growth) {{
+                    html += `<div style="font-size:10px;color:var(--text-secondary);padding:2px 4px;background:#f8f9fb;border-radius:3px;margin-bottom:4px;">
+                        &#x2022; 要求的增长: ${{ie.required_growth}}</div>`;
+                }}
+                if (ie.summary) {{
+                    html += `<div style="font-size:10px;color:var(--text-secondary);padding:2px 4px;background:#fff7ed;border-radius:3px;border-left:2px solid var(--orange);margin-bottom:4px;">${{ie.summary}}</div>`;
+                }}
+            }}
+            // 期权价值
+            if (dl.option_value) {{
+                const ov = dl.option_value;
+                html += `<div style="font-size:10px;font-weight:600;color:var(--text-muted);padding:4px 0 2px;margin-top:2px;">&#x1F3AF; 期权价值识别</div>
+                <div class="data-snapshot" style="grid-template-columns:repeat(2,1fr);margin-bottom:2px;">
+                    <div class="data-item"><div class="data-item-label">隐含溢价</div><div class="data-item-value">${{ov.implied_premium||'N/A'}}</div></div>
+                    <div class="data-item"><div class="data-item-label">赔率评估</div><div class="data-item-value">${{ov.odds_assessment||'N/A'}}</div></div>
+                </div>`;
+                if (ov.summary) {{
+                    html += `<div style="font-size:10px;color:var(--text-secondary);padding:2px 4px;background:#f0fdf4;border-radius:3px;border-left:2px solid var(--green);margin-bottom:4px;">${{ov.summary}}</div>`;
+                }}
+            }}
+            // 博弈对冲
+            if (dl.game_theory) {{
+                const gt = dl.game_theory;
+                html += `<div style="font-size:10px;font-weight:600;color:var(--text-muted);padding:4px 0 2px;margin-top:2px;">&#x2694; 博弈对冲分析</div>`;
+                if (gt.competitors && gt.competitors.length) {{
+                    html += `<div style="font-size:10px;color:var(--text-secondary);padding:2px 4px;background:#f8f9fb;border-radius:3px;margin-bottom:4px;">`;
+                    gt.competitors.forEach(c => {{
+                        html += `<div>&#x2022; ${{c.name||'对手'}}: ${{c.impact||'N/A'}}</div>`;
+                    }});
+                    html += `</div>`;
+                }}
+                if (gt.hedge_nodes && gt.hedge_nodes.length) {{
+                    html += `<div style="font-size:10px;color:var(--text-secondary);padding:2px 4px;background:#f0f4ff;border-radius:3px;margin-bottom:4px;">
+                        <span style="font-weight:600;">对冲节点:</span> ${{gt.hedge_nodes.join('; ')}}</div>`;
+                }}
+                if (gt.summary) {{
+                    html += `<div style="font-size:10px;color:var(--text-secondary);padding:2px 4px;background:#faf5ff;border-radius:3px;border-left:2px solid #9333ea;margin-bottom:4px;">${{gt.summary}}</div>`;
+                }}
+            }}
+            // 时间墙
+            if (dl.time_wall) {{
+                const tw = dl.time_wall;
+                html += `<div style="font-size:10px;font-weight:600;color:var(--text-muted);padding:4px 0 2px;margin-top:2px;">&#x23F3; 时间墙与终值回归</div>`;
+                if (tw.walls && tw.walls.length) {{
+                    html += `<div style="font-size:10px;color:var(--text-secondary);padding:2px 4px;background:#f8f9fb;border-radius:3px;margin-bottom:4px;">`;
+                    tw.walls.forEach(w => {{
+                        html += `<div>&#x2022; ${{w.event||'事件'}}: ${{w.time||'N/A'}} — ${{w.impact||'N/A'}}</div>`;
+                    }});
+                    html += `</div>`;
+                }}
+                if (tw.summary) {{
+                    html += `<div style="font-size:10px;color:var(--text-secondary);padding:2px 4px;background:#fef2f2;border-radius:3px;border-left:2px solid var(--red);margin-bottom:4px;">${{tw.summary}}</div>`;
+                }}
+            }}
+            html += `</div></div>`;
+        }}
+
+        // ====== 收益分析（分红） ======
+        if (a.income_analysis) {{
+            html += `<div class="signals-section" style="margin-top:4px;">
+                <div class="signals-header" onclick="toggleSection(this)">&#x25BC; 收益分析 (分红可持续性/情景)</div>
+                <div class="toggle-body" style="display:none;">`;
+            const inc = a.income_analysis;
+            if (inc.dividend_sustainability) {{
+                const ds = inc.dividend_sustainability;
+                const dsCls = ds.level === '高' ? 'signal-success' : ds.level === '中' ? 'signal-warning' : 'signal-danger';
+                html += `<div class="data-snapshot" style="grid-template-columns:repeat(3,1fr);margin-bottom:2px;">
+                    <div class="data-item"><div class="data-item-label">可持续性</div><div class="data-item-value ${{dsCls}}">${{ds.level||'N/A'}}</div></div>
+                    <div class="data-item"><div class="data-item-label">评分</div><div class="data-item-value">${{ds.score||'N/A'}}</div></div>
+                    <div class="data-item"><div class="data-item-label">股息率</div><div class="data-item-value">${{ds.dividend_yield||'N/A'}}</div></div>
+                </div>`;
+                if (ds.summary) {{
+                    html += `<div style="font-size:10px;color:var(--text-secondary);padding:2px 4px;background:#f8f9fb;border-radius:3px;margin-bottom:4px;">${{ds.summary}}</div>`;
+                }}
+            }}
+            if (inc.scenarios) {{
+                const sc = inc.scenarios;
+                html += `<div style="font-size:10px;font-weight:600;color:var(--text-muted);padding:2px 0;">&#x1F300; 三情景模型</div>`;
+                ['bull','base','bear'].forEach(k => {{
+                    if (sc[k]) {{
+                        const s = sc[k];
+                        const cls = k === 'bull' ? 'signal-success' : k === 'bear' ? 'signal-danger' : 'signal-info';
+                        html += `<div style="font-size:10px;color:var(--text-secondary);padding:1px 4px;background:#f8f9fb;border-radius:3px;margin-bottom:2px;border-left:2px solid ${{k==='bull'?'var(--green)':k==='bear'?'var(--red)':'var(--blue)'}};">
+                            <span class="${{cls}}" style="font-weight:600;font-size:9px;">${{k==='bull'?'乐观':k==='base'?'基准':'悲观'}}</span>:
+                            ${{s.description||''}} ${{s.return||''}}
+                        </div>`;
+                    }}
+                }});
+            }}
+            html += `</div></div>`;
+        }}
+
+        // ====== 论点追踪 ======
+        if (a.thesis) {{
+            html += `<div class="signals-section" style="margin-top:4px;">
+                <div class="signals-header" onclick="toggleSection(this)">&#x25BC; 论点追踪 (漂移/红旗)</div>
+                <div class="toggle-body" style="display:none;">`;
+            const th = a.thesis;
+            if (th.drift) {{
+                const d = th.drift;
+                const dCls = d.drift_score >= 3 ? 'signal-danger' : d.drift_score >= 1.5 ? 'signal-warning' : 'signal-success';
+                html += `<div class="data-snapshot" style="grid-template-columns:repeat(2,1fr);margin-bottom:2px;">
+                    <div class="data-item"><div class="data-item-label">漂移评分</div><div class="data-item-value ${{dCls}}">${{d.drift_score||'0'}}</div></div>
+                    <div class="data-item"><div class="data-item-label">漂移方向</div><div class="data-item-value">${{d.direction||'N/A'}}</div></div>
+                </div>`;
+                if (d.summary) {{
+                    html += `<div style="font-size:10px;color:var(--text-secondary);padding:2px 4px;background:#fff7ed;border-radius:3px;margin-bottom:4px;">${{d.summary}}</div>`;
+                }}
+            }}
+            if (th.red_flags && th.red_flags.length) {{
+                html += `<div style="font-size:10px;font-weight:600;color:var(--text-muted);padding:2px 0;">&#x1F6A9; 红旗预警 (${{th.red_flags.length}})</div>`;
+                th.red_flags.forEach(rf => {{
+                    const rfCls = rf.level === 'high' ? 'signal-danger' : rf.level === 'medium' ? 'signal-warning' : 'signal-info';
+                    html += `<div style="font-size:10px;color:var(--text-secondary);padding:1px 4px;background:#f8f9fb;border-radius:3px;margin-bottom:2px;" class="${{rfCls}}">
+                        &#x2022; ${{rf.flag||rf.text||''}}
+                    </div>`;
+                }});
+            }}
+            if (th.thesis && th.thesis.summary) {{
+                html += `<div style="font-size:10px;color:var(--text-secondary);padding:2px 4px;background:#f0f4ff;border-radius:3px;border-left:2px solid var(--blue);margin-top:2px;">${{th.thesis.summary}}</div>`;
+            }}
+            html += `</div></div>`;
+        }}
+
+        // ====== 检查清单 ======
+        if (a.checklist) {{
+            html += `<div class="signals-section" style="margin-top:4px;">
+                <div class="signals-header" onclick="toggleSection(this)">&#x25BC; 检查清单 (六道门/否决)</div>
+                <div class="toggle-body" style="display:none;">`;
+            const cl = a.checklist;
+            if (cl.six_gates && cl.six_gates.length) {{
+                html += `<div style="font-size:10px;font-weight:600;color:var(--text-muted);padding:2px 0;">&#x1F6AA; 六道门检查</div>`;
+                cl.six_gates.forEach(g => {{
+                    const gCls = g.passed ? 'signal-success' : 'signal-danger';
+                    html += `<div style="font-size:10px;color:var(--text-secondary);padding:1px 4px;background:#f8f9fb;border-radius:3px;margin-bottom:2px;">
+                        <span class="${{gCls}}">${{g.passed ? '&#x2713;' : '&#x2717;'}}</span>
+                        ${{g.name||g.question||''}}: ${{g.result||g.answer||''}}
+                    </div>`;
+                }});
+            }}
+            if (cl.veto && cl.veto.length) {{
+                cl.veto.forEach(v => {{
+                    if (v.triggered) {{
+                        html += `<div class="alert-signal signal-danger" style="font-size:10px;padding:2px 4px;background:var(--red-bg);border-radius:3px;margin-bottom:2px;">
+                            &#x274C; 快速否决: ${{v.reason||v.text||''}}
+                        </div>`;
+                    }}
+                }});
+            }}
+            if (cl.summary) {{
+                html += `<div style="font-size:10px;color:var(--text-secondary);padding:2px 4px;background:#f8f9fb;border-radius:3px;margin-top:2px;"><strong>结论:</strong> ${{cl.summary}}</div>`;
+            }}
+            html += `</div></div>`;
+        }}
+
+        // ====== 质量筛选 ======
+        if (a.quality_screen) {{
+            html += `<div class="signals-section" style="margin-top:4px;">
+                <div class="signals-header" onclick="toggleSection(this)">&#x25BC; 质量筛选</div>
+                <div class="toggle-body" style="display:none;">`;
+            const qs = a.quality_screen;
+            const qsCls = qs.overall === 'pass' ? 'signal-success' : qs.overall === 'borderline' ? 'signal-warning' : 'signal-danger';
+            html += `<div class="data-snapshot" style="grid-template-columns:repeat(2,1fr);margin-bottom:2px;">
+                <div class="data-item"><div class="data-item-label">综合评级</div><div class="data-item-value ${{qsCls}}">${{qs.overall==='pass'?'通过':qs.overall==='borderline'?'边缘':'未通过'}}</div></div>
+                <div class="data-item"><div class="data-item-label">评分</div><div class="data-item-value">${{qs.score||'N/A'}}</div></div>
+            </div>`;
+            if (qs.details && qs.details.length) {{
+                html += `<div style="font-size:10px;color:var(--text-secondary);padding:2px 4px;background:#f8f9fb;border-radius:3px;margin-bottom:4px;">`;
+                qs.details.forEach(d => {{
+                    html += `<div>&#x2022; ${{d}}</div>`;
+                }});
+                html += `</div>`;
+            }}
+            if (qs.summary) {{
+                html += `<div style="font-size:10px;color:var(--text-secondary);padding:2px 4px;background:#f0fdf4;border-radius:3px;border-left:2px solid var(--green);">${{qs.summary}}</div>`;
+            }}
+            html += `</div></div>`;
+        }}
+
+        // ====== 新闻脉冲 ======
+        if (a.news_pulse) {{
+            html += `<div class="signals-section" style="margin-top:4px;">
+                <div class="signals-header" onclick="toggleSection(this)">&#x25BC; 新闻脉冲</div>
+                <div class="toggle-body" style="display:none;">`;
+            const np = a.news_pulse;
+            if (np.anomaly && np.anomaly.is_anomaly) {{
+                html += `<div class="alert-signal signal-danger" style="font-size:10px;padding:2px 4px;background:var(--red-bg);border-radius:3px;margin-bottom:2px;">
+                    &#x26A1; 异常检测: ${{np.anomaly.anomaly_type||'价格异动'}} — ${{np.anomaly.description||''}}
+                </div>`;
+            }}
+            if (np.news_assessment) {{
+                const na = np.news_assessment;
+                const naCls = na.sentiment === 'positive' ? 'signal-success' : na.sentiment === 'negative' ? 'signal-danger' : 'signal-info';
+                html += `<div style="font-size:10px;color:var(--text-secondary);padding:2px 4px;background:#f8f9fb;border-radius:3px;">
+                    <span class="${{naCls}}">【${{na.sentiment==='positive'?'正面':na.sentiment==='negative'?'负面':'中性'}}】</span>
+                    ${{na.summary||na.assessment||''}}
+                </div>`;
+            }}
+            html += `</div></div>`;
+        }}
+
+        // ====== 组合级分析 ======
+        if (!a.ticker && a.portfolio_review) {{
+            html += `<div class="signals-section" style="margin-top:4px;">
+                <div class="signals-header" onclick="toggleSection(this)">&#x25BC; 组合回顾 (集中度/压力测试/再平衡)</div>
+                <div class="toggle-body" style="display:none;">`;
+            const pr = a.portfolio_review;
+            if (pr.concentration) {{
+                const c = pr.concentration;
+                const cCls = c.assessment === '适度集中' ? 'signal-success' : c.assessment === '高度集中' ? 'signal-warning' : 'signal-danger';
+                html += `<div style="font-size:10px;font-weight:600;color:var(--text-muted);padding:2px 0;">&#x1F4CA; 集中度分析</div>
+                <div class="data-snapshot" style="grid-template-columns:repeat(3,1fr);margin-bottom:2px;">
+                    <div class="data-item"><div class="data-item-label">Top3权重</div><div class="data-item-value">${{c.top3_weight||'N/A'}}%</div></div>
+                    <div class="data-item"><div class="data-item-label">持仓数</div><div class="data-item-value">${{c.num_holdings||'N/A'}}</div></div>
+                    <div class="data-item"><div class="data-item-label">评估</div><div class="data-item-value ${{cCls}}">${{c.assessment||'N/A'}}</div></div>
+                </div>`;
+            }}
+            if (pr.correlation) {{
+                const corr = pr.correlation;
+                html += `<div style="font-size:10px;font-weight:600;color:var(--text-muted);padding:2px 0;">&#x1F517; 相关性检查</div>
+                <div class="data-snapshot" style="grid-template-columns:repeat(2,1fr);margin-bottom:2px;">
+                    <div class="data-item"><div class="data-item-label">行业覆盖</div><div class="data-item-value">${{corr.sector_count||'N/A'}}个</div></div>
+                    <div class="data-item"><div class="data-item-label">评估</div><div class="data-item-value">${{corr.assessment||'N/A'}}</div></div>
+                </div>`;
+            }}
+            if (pr.stress_test) {{
+                const st = pr.stress_test;
+                html += `<div style="font-size:10px;font-weight:600;color:var(--text-muted);padding:2px 0;">&#x1F300; 压力测试</div>`;
+                if (st.scenarios && st.scenarios.length) {{
+                    st.scenarios.forEach(sc => {{
+                        html += `<div style="font-size:10px;color:var(--text-secondary);padding:1px 4px;background:#f8f9fb;border-radius:3px;margin-bottom:2px;">
+                            &#x2022; ${{sc.name||'情景'}}: 影响=${{sc.impact||'N/A'}}
+                        </div>`;
+                    }});
+                }}
+                if (st.summary) {{
+                    html += `<div style="font-size:10px;color:var(--text-secondary);padding:2px 4px;background:#fef2f2;border-radius:3px;border-left:2px solid var(--red);margin-bottom:4px;">${{st.summary}}</div>`;
+                }}
+            }}
+            if (pr.rebalancing && pr.rebalancing.length) {{
+                html += `<div style="font-size:10px;font-weight:600;color:var(--text-muted);padding:2px 0;">&#x2696; 再平衡建议</div>`;
+                pr.rebalancing.forEach(r => {{
+                    html += `<div style="font-size:10px;color:var(--text-secondary);padding:1px 4px;background:#f0fdf4;border-radius:3px;margin-bottom:2px;">
+                        &#x2022; ${{r.ticker||'组合'}}: ${{r.action||'N/A'}} — ${{r.reason||''}}
+                    </div>`;
+                }});
+            }}
+            if (pr.opportunity_cost) {{
+                const oc = pr.opportunity_cost;
+                html += `<div style="font-size:10px;color:var(--text-muted);padding:2px 4px;background:#f8f9fb;border-radius:3px;margin-top:2px;">
+                    &#x2022; 机会成本: 当前亏损 ${{oc.total_loss||'N/A'}}
+                </div>`;
+            }}
+            html += `</div></div>`;
+        }}
+
+        // ====== 健康评估 ======
+        if (a.health_assessment) {{
+            html += `<div class="signals-section" style="margin-top:4px;">
+                <div class="signals-header" onclick="toggleSection(this)">&#x25BC; 组合健康评估</div>
+                <div class="toggle-body" style="display:none;">`;
+            const ha = a.health_assessment;
+            const haCls = ha.score >= 8 ? 'signal-success' : ha.score >= 6 ? 'signal-warning' : 'signal-danger';
+            html += `<div style="display:flex;align-items:center;gap:8px;padding:4px 6px;background:#f8f9fb;border-radius:3px;margin-bottom:4px;">
+                <span style="font-size:18px;font-weight:700;" class="${{haCls}}">${{ha.score}}/10</span>
+                <span style="font-size:11px;color:var(--text-secondary);">${{ha.level||''}}</span>
+            </div>`;
+            if (ha.penalties && ha.penalties.length) {{
+                ha.penalties.forEach(p => {{
+                    html += `<div style="font-size:10px;color:var(--red);padding:1px 4px;">&#x26A0; ${{p}}</div>`;
+                }});
+            }}
+            if (ha.bonuses && ha.bonuses.length) {{
+                ha.bonuses.forEach(b => {{
+                    html += `<div style="font-size:10px;color:var(--green);padding:1px 4px;">&#x2713; ${{b}}</div>`;
+                }});
+            }}
+            html += `</div></div>`;
+        }}
+
+        // ====== 组合质量筛选 ======
+        if (a.portfolio_quality) {{
+            html += `<div class="signals-section" style="margin-top:4px;">
+                <div class="signals-header" onclick="toggleSection(this)">&#x25BC; 质量筛选汇总</div>
+                <div class="toggle-body" style="display:none;">`;
+            const pq = a.portfolio_quality;
+            html += `<div class="data-snapshot" style="grid-template-columns:repeat(3,1fr);margin-bottom:2px;">
+                <div class="data-item" style="background:var(--green-bg);"><div class="data-item-label">通过</div><div class="data-item-value" style="color:var(--green);">${{pq.passed_count||0}}</div></div>
+                <div class="data-item" style="background:var(--orange-bg);"><div class="data-item-label">边缘</div><div class="data-item-value" style="color:var(--orange);">${{pq.borderline_count||0}}</div></div>
+                <div class="data-item" style="background:var(--red-bg);"><div class="data-item-label">未通过</div><div class="data-item-value" style="color:var(--red);">${{pq.failed_count||0}}</div></div>
+            </div>`;
+            if (pq.summary) {{
+                html += `<div style="font-size:10px;color:var(--text-secondary);padding:2px 4px;background:#f8f9fb;border-radius:3px;">${{pq.summary}}</div>`;
+            }}
+            html += `</div></div>`;
+        }}
+
         html += `</div></div>`;
     }});
     if (!alertsData.length) {{
         html = '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:12px;">暂无持仓数据</div>';
     }}
     container.innerHTML = html;
+}}
+
+function toggleSection(el) {{
+    const body = el.nextElementSibling;
+    if (body) {{
+        body.style.display = body.style.display === 'none' ? 'block' : 'none';
+        el.innerHTML = body.style.display === 'block'
+            ? '&#x25B2; ' + el.textContent.replace(/^\u25BC\s*/, '')
+            : '&#x25BC; ' + el.textContent.replace(/^\u25B2\s*/, '');
+    }}
 }}
 
 function toggleSignals(el) {{
