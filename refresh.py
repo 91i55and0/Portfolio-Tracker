@@ -101,6 +101,19 @@ def refresh_all(save_history: bool = True):
         import traceback
         traceback.print_exc()
 
+    # 7. 运行 AI Berkshire 分析
+    try:
+        from portfolio_analysis import BerkshireAnalysis
+        ba = BerkshireAnalysis(pm)
+        alerts = ba.analyze_all()
+        logger.info(f"Berkshire 分析完成: {len(alerts)} 条分析条目")
+        # 记录关键发现
+        for a in alerts:
+            if a.get("berkshire") and a["berkshire"]["avg_score"] < 2.0:
+                logger.warning(f"  ⚠ {a['ticker']} {a['name']}: 四大师评分 {a['berkshire']['avg_score']} - {a['berkshire']['summary']}")
+    except Exception as e:
+        logger.warning(f"Berkshire 分析跳过: {e}")
+
     logger.info("刷新完成!")
     logger.info("=" * 60)
 

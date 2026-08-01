@@ -1,6 +1,6 @@
 """
 IBKR 白色风格专业组合持仓仪表盘生成器
-包含持仓分析预警面板（叙事式分析 + 数据驱动信号）
+包含持仓分析预警面板 — 集成 AI Berkshire 四大师框架
 """
 
 import os
@@ -8,17 +8,41 @@ import json
 from datetime import datetime
 from typing import List, Dict
 
+# 尝试导入 AI Berkshire 分析引擎
+try:
+    from portfolio_analysis import BerkshireAnalysis
+    HAS_BERKSHIRE = True
+except ImportError:
+    HAS_BERKSHIRE = False
+    import logging
+    logging.warning("未找到 portfolio_analysis，使用基础分析模式")
+
 
 def generate_analysis(holdings: List[Dict], summary: Dict, manager=None) -> List[Dict]:
-    """为每个持仓生成分析预警（叙事式分析 + 数据信号）"""
-    # 从 manager 原始数据中读取分析文本
+    """使用 AI Berkshire 方法论生成分析（如有），否则使用基础分析"""
+    if HAS_BERKSHIRE and manager:
+        try:
+            ba = BerkshireAnalysis(manager)
+            alerts = ba.analyze_all()
+            # 读取用户自定义分析文本
+            analysis_map = {}
+            for h in manager.data["holdings"]:
+                if "analysis" in h:
+                    analysis_map[h["id"]] = h["analysis"]
+            for a in alerts:
+                a["analysis_text"] = analysis_map.get(a["id"], a.get("analysis_text", ""))
+            return alerts
+        except Exception as e:
+            import logging
+            logging.warning(f"Berkshire 分析失败，回退基础模式: {e}")
+
+    # ========== 回退：基础分析模式 ==========
     analysis_map = {}
     if manager:
         for h in manager.data["holdings"]:
             if "analysis" in h:
                 analysis_map[h["id"]] = h["analysis"]
 
-    # 构建分析条目
     alerts = []
     for h in holdings:
         item = {
@@ -35,14 +59,12 @@ def generate_analysis(holdings: List[Dict], summary: Dict, manager=None) -> List
             "verdict": "",
             "data_snapshot": {},
         }
-
-        # 数据快照
         item["data_snapshot"] = {
             "pnl_pct": round(h["pnl_pct"], 1),
             "pnl": round(h["pnl"], 2),
             "weight": round(h["weight"], 1),
-            "weight_a": round(h["weight_a"], 1) if h.get("weight_a") is not None else 0,
-            "weight_hk_us": round(h["weight_hk_us"], 1) if h.get("weight_hk_us") is not None else 0,
+            "weight_a": round(h.get("weight_a", 0), 1),
+            "weight_hk_us": round(h.get("weight_hk_us", 0), 1),
             "holding_days": h["holding_days"],
             "day_change_pct": round(h["day_change_pct"], 2),
             "current_price": round(h["current_price"], 2),
@@ -50,56 +72,22 @@ def generate_analysis(holdings: List[Dict], summary: Dict, manager=None) -> List
             "annualized_return": round(h["annualized_return"], 1),
             "market": h.get("market", ""),
         }
-
-        # 1. 盈亏幅度预警
         pnl_pct = h["pnl_pct"]
         if pnl_pct <= -30:
-            item["signals"].append({"type": "danger", "icon": "&#x26A0;", "text": f"亏损 {pnl_pct:.1f}%，深套严重，建议评估止损"})
+            item["signals"].append({"type": "danger", "icon": "&#x26A0;", "text": f"亏损 {pnl_pct:.1f}%，深套严重"})
             item["risk_level"] = "danger"
         elif pnl_pct <= -15:
-            item["signals"].append({"type": "warning", "icon": "&#x26A0;", "text": f"亏损 {pnl_pct:.1f}%，已触发止损警戒线"})
+            item["signals"].append({"type": "warning", "icon": "&#x26A0;", "text": f"亏损 {pnl_pct:.1f}%"})
             if item["risk_level"] == "normal":
                 item["risk_level"] = "warning"
-        elif pnl_pct <= -5:
-            item["signals"].append({"type": "info", "icon": "&#x2193;", "text": f"小幅亏损 {pnl_pct:.1f}%，观察是否继续下行"})
-        elif pnl_pct >= 50:
-            item["signals"].append({"type": "success", "icon": "&#x2191;", "text": f"盈利 {pnl_pct:.1f}%，可考虑分批止盈"})
-            if item["risk_level"] == "normal":
-                item["risk_level"] = "info"
-        elif pnl_pct >= 20:
-            item["signals"].append({"type": "success", "icon": "&#x2191;", "text": f"盈利 {pnl_pct:.1f}%，表现良好"})
-        elif pnl_pct >= 5:
-            item["signals"].append({"type": "info", "icon": "&#x2191;", "text": f"小幅盈利 {pnl_pct:.1f}%"})
-
-        # 2. 当日涨跌幅异常
         day_chg = h["day_change_pct"]
         if abs(day_chg) >= 5:
-            item["signals"].append({"type": "danger" if day_chg < 0 else "success", "icon": "&#x26A1;", "text": f"日内{'下跌' if day_chg < 0 else '上涨'}{abs(day_chg):.1f}%，异动幅度较大"})
-            if item["risk_level"] == "normal" and day_chg < 0:
-                item["risk_level"] = "warning"
-
-        # 3. 持仓集中度预警
+            item["signals"].append({"type": "danger" if day_chg < 0 else "success", "icon": "&#x26A1;", "text": f"日内{'下跌' if day_chg < 0 else '上涨'}{abs(day_chg):.1f}%"})
         weight = h["weight"]
         if weight >= 30:
-            item["signals"].append({"type": "warning", "icon": "&#x26A0;", "text": f"仓位占比 {weight:.1f}%，集中度偏高"})
+            item["signals"].append({"type": "warning", "icon": "&#x26A0;", "text": f"仓位占比 {weight:.1f}%"})
             if item["risk_level"] == "normal":
                 item["risk_level"] = "warning"
-        elif weight >= 20:
-            item["signals"].append({"type": "info", "icon": "&#x26A0;", "text": f"仓位占比 {weight:.1f}%，注意集中风险"})
-
-        # 4. 持仓天数提示
-        days = h["holding_days"]
-        if days <= 5:
-            item["signals"].append({"type": "info", "icon": "&#x1F4C5;", "text": f"新建仓仅 {days} 天，密切跟踪"})
-        elif days >= 180:
-            item["signals"].append({"type": "info", "icon": "&#x23F1;", "text": f"已持有 {days} 天，长期持仓"})
-
-        # 5. 年化收益率评估
-        ann_ret = h["annualized_return"]
-        if days > 30 and ann_ret < -20:
-            item["signals"].append({"type": "warning", "icon": "&#x26A0;", "text": f"年化收益 {ann_ret:.1f}%，表现不及预期，建议复核逻辑"})
-
-        # 6. 判定结论
         if item["risk_level"] == "danger":
             item["verdict"] = "⚠ 需重点关注"
         elif item["risk_level"] == "warning":
@@ -108,41 +96,7 @@ def generate_analysis(holdings: List[Dict], summary: Dict, manager=None) -> List
             item["verdict"] = "✓ 关注中"
         else:
             item["verdict"] = "● 正常"
-
         alerts.append(item)
-
-    # 添加组合级预警
-    if summary["num_negative"] > summary["num_holdings"] * 0.6:
-        alerts.insert(0, {
-            "id": "portfolio",
-            "ticker": "",
-            "name": "组合预警",
-            "market": "",
-            "currency": "",
-            "sector": "",
-            "notes": "",
-            "analysis_text": "",
-            "signals": [{"type": "warning", "icon": "&#x26A0;", "text": f"超过60%持仓处于亏损状态 ({summary['num_negative']}/{summary['num_holdings']})，注意组合整体风险"}],
-            "risk_level": "warning",
-            "verdict": "组合层面预警",
-            "data_snapshot": {},
-        })
-
-    if summary["total_pnl_pct"] <= -15:
-        alerts.insert(0, {
-            "id": "portfolio",
-            "ticker": "",
-            "name": "组合预警",
-            "market": "",
-            "currency": "",
-            "sector": "",
-            "notes": "",
-            "analysis_text": "",
-            "signals": [{"type": "danger", "icon": "&#x26A0;", "text": f"组合总亏损 {summary['total_pnl_pct']:.1f}%，建议审视整体配置"}],
-            "risk_level": "danger",
-            "verdict": "组合层面预警",
-            "data_snapshot": {},
-        })
 
     return alerts
 
@@ -702,7 +656,7 @@ tr:last-child td {{ border-bottom: none; }}
             <!-- Alerts rendered by JS -->
         </div>
         <div style="padding:8px 14px;border-top:1px solid var(--border-color);font-size:10px;color:var(--text-muted);text-align:center;flex-shrink:0;">
-            分析文本可在 portfolio.json 中编辑 &middot; 数据信号自动生成
+            AI Berkshire 四大师框架 &middot; 分析文本可在 portfolio.json 中编辑
         </div>
     </div>
 
@@ -860,6 +814,21 @@ function renderAlerts() {{
                 <div class="analysis-verdict ${{vCls}}">${{a.verdict}}</div>
             </div>
             <div class="analysis-card-body">`;
+
+        // Berkshire Score
+        if (a.berkshire) {{
+            const bs = a.berkshire;
+            const scoreCls = bs.avg_score >= 3.5 ? 'positive' : bs.avg_score >= 2.5 ? 'neutral' : 'negative';
+            html += `<div style="display:flex;align-items:center;gap:6px;padding:4px 0 6px;border-bottom:1px dashed var(--border-light);margin-bottom:6px;">
+                <span style="font-size:10px;color:var(--text-muted);font-weight:600;">&#x1F3C6; 四大师评分</span>
+                <span style="font-size:16px;font-weight:700;color:var(--text-primary);" class="${{scoreCls}}">${{bs.avg_score}}</span>
+                <span style="font-size:9px;color:var(--text-muted);flex:1;">${{bs.score_detail}}</span>
+            </div>
+            <div style="font-size:11px;color:var(--text-secondary);padding:4px 6px;background:#f8f9fb;border-radius:3px;margin-bottom:6px;">
+                ${{bs.summary}}
+                ${{bs.recommendations && bs.recommendations.length ? '<br>' + bs.recommendations.map(r => '&#x2022; ' + r).join('<br>') : ''}}
+            </div>`;
+        }}
 
         // Narrative Analysis Text
         if (hasAnalysis) {{
