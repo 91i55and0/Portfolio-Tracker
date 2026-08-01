@@ -918,27 +918,31 @@ function renderAlerts() {
                 <div class="signals-header" onclick="toggleSection(this)">&#x25BC; 检查清单 (六道门/否决)</div>
                 <div class="toggle-body" style="display:none;">`;
             const cl = a.checklist;
-            if (cl.six_gates && cl.six_gates.length) {
-                html += `<div style="font-size:10px;font-weight:600;color:var(--text-muted);padding:2px 0;">&#x1F6AA; 六道门检查</div>`;
-                cl.six_gates.forEach(g => {
+            const gates = cl.six_gates || {};
+            const veto = cl.veto || {};
+            // six_gates 是对象，gates 属性才是数组
+            if (gates.gates && gates.gates.length) {
+                html += `<div style="font-size:10px;font-weight:600;color:var(--text-muted);padding:2px 0;">&#x1F6AA; 六道门检查 (总分 ${gates.total_score||0}/${gates.max_score||0})</div>`;
+                gates.gates.forEach(g => {
                     const gCls = g.passed ? 'signal-success' : 'signal-danger';
                     html += `<div style="font-size:10px;color:var(--text-secondary);padding:1px 4px;background:#f8f9fb;border-radius:3px;margin-bottom:2px;">
                         <span class="${gCls}">${g.passed ? '&#x2713;' : '&#x2717;'}</span>
-                        ${g.name||g.question||''}: ${g.result||g.answer||''}
+                        ${g.gate||g.question||g.name||''}: ${g.detail||g.answer||g.result||''}
                     </div>`;
                 });
             }
-            if (cl.veto && cl.veto.length) {
-                cl.veto.forEach(v => {
+            // veto 是对象，veto_results 属性才是数组
+            if (veto.veto_results && veto.veto_results.length) {
+                veto.veto_results.forEach(v => {
                     if (v.triggered) {
                         html += `<div class="alert-signal signal-danger" style="font-size:10px;padding:2px 4px;background:var(--red-bg);border-radius:3px;margin-bottom:2px;">
-                            &#x274C; 快速否决: ${v.reason||v.text||''}
+                            &#x274C; 快速否决: ${v.detail||v.text||v.reason||''}
                         </div>`;
                     }
                 });
             }
-            if (cl.summary) {
-                html += `<div style="font-size:10px;color:var(--text-secondary);padding:2px 4px;background:#f8f9fb;border-radius:3px;margin-top:2px;"><strong>结论:</strong> ${cl.summary}</div>`;
+            if (gates.summary) {
+                html += `<div style="font-size:10px;color:var(--text-secondary);padding:2px 4px;background:#f8f9fb;border-radius:3px;margin-top:2px;"><strong>结论:</strong> ${gates.summary}</div>`;
             }
             html += `</div></div>`;
         }
