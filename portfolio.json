@@ -1,0 +1,313 @@
+{
+  "portfolio": {
+    "name": "综合投资组合",
+    "cash_cny": 4921.09,
+    "cash_hkd": 3200,
+    "cash_usd": 1740,
+    "base_currency": "CNY",
+    "created_at": "2026-08-01",
+    "last_updated": "2026-08-01 10:32:19",
+    "risk_free_rate": 0.025
+  },
+  "holdings": [
+    {
+      "id": "h001",
+      "ticker": "VT",
+      "exchange": "US",
+      "name": "Vanguard Total World Stock ETF",
+      "market": "美股",
+      "sector": "ETF/全球指数",
+      "shares": 6,
+      "avg_cost": 150.47,
+      "currency": "USD",
+      "add_date": "2026-01-01",
+      "notes": "核心永久底仓",
+      "analysis": "全球全市场ETF，覆盖发达+新兴市场，作为永久底仓配置不需要频繁操作。跟随大盘温和反弹，继续持有即可。"
+    },
+    {
+      "id": "h002",
+      "ticker": "DIA",
+      "exchange": "US",
+      "name": "SPDR Dow Jones Industrial Average ETF",
+      "market": "美股",
+      "sector": "ETF/道指",
+      "shares": 3,
+      "avg_cost": 504.73,
+      "currency": "USD",
+      "add_date": "2026-01-01",
+      "notes": "核心永久底仓",
+      "analysis": "道指ETF，核心永久底仓。周四周五跟随大盘连续反弹（周四+1.2%、周五+0.53%），两天累计涨幅可观。本身就是永久底仓配置，不需要操作。"
+    },
+    {
+      "id": "h003",
+      "ticker": "LLY",
+      "exchange": "US",
+      "name": "Eli Lilly and Company",
+      "market": "美股",
+      "sector": "制药",
+      "shares": 1,
+      "avg_cost": 971.13,
+      "currency": "USD",
+      "add_date": "2026-04-15",
+      "notes": "8/5财报前持有",
+      "analysis": "这两天没有独立的重大新闻，跟随大盘温和走势。8/5财报前维持观察即可，不需要额外操作。关注GLP-1药物（Zepbound/Mounjaro）销售数据和新药审批进展，这是财报关键看点。"
+    },
+    {
+      "id": "h004",
+      "ticker": "VRT",
+      "exchange": "US",
+      "name": "Vertiv Holdings Co",
+      "market": "美股",
+      "sector": "工业/数据中心",
+      "shares": 1,
+      "avg_cost": 291.29,
+      "currency": "USD",
+      "add_date": "2026-05-20",
+      "notes": "数据中心电力基础设施龙头",
+      "analysis": "周四+7.72%，周五继续涨约+6.4%，两天从底部反弹超14%，价格大概到了$241-248区间。EMEA数据已经确认：报告口径持平、有机口径轻微下滑，比Q1的-29.4%明显改善，全年指引维持上调。节奏问题不是需求问题这个判断被数据支撑了。依然没有收复$280，200日均线($315.61)更是差得远，严格说还没到逻辑完全验证成功的地步，但方向是对的。"
+    },
+    {
+      "id": "h005",
+      "ticker": "OKTA",
+      "exchange": "US",
+      "name": "Okta Inc.",
+      "market": "美股",
+      "sector": "网络安全",
+      "shares": 3,
+      "avg_cost": 126.43,
+      "currency": "USD",
+      "add_date": "2026-06-10",
+      "notes": "小仓位观察仓",
+      "analysis": "周五收$141.93(+1.08%)，日内区间$137.76-144.33。宣布收购Permiso Security（身份风险信号/行为分析公司），金额未披露，属于对现有身份安全能力的补强，不是重大催化剂，算温和正面。3股混合成本$126.43，现价对应浮盈约+12.7%，小仓位继续持有观察。"
+    },
+    {
+      "id": "h006",
+      "ticker": "SKHY",
+      "exchange": "US",
+      "name": "SK Hynix Inc. ADR",
+      "market": "美股",
+      "sector": "半导体",
+      "shares": 2,
+      "avg_cost": 147.87,
+      "currency": "USD",
+      "add_date": "2026-07-15",
+      "notes": "HBM龙头，AI受益股",
+      "analysis": "海力士ADR于7月中旬在纳斯达克上市（发行价$158.14）。Q2财报创纪录但不及预期，7/29盘后跌超5%，但7/31 ADR暴涨17.52%强劲反弹。HBM高带宽内存深度受益于AI算力需求，长期逻辑仍在，但上市初期波动剧烈，小仓位持有观察即可。"
+    },
+    {
+      "id": "h007",
+      "ticker": "VCX",
+      "exchange": "US",
+      "name": "Fundrise Innovation Fund",
+      "market": "美股",
+      "sector": "另类投资",
+      "shares": 0.5,
+      "avg_cost": 447.7,
+      "currency": "USD",
+      "add_date": "2026-06-01",
+      "notes": "极小仓位观察",
+      "analysis": "Fundrise Innovation Fund是代币化的创新基金，流动性有限。仅0.5股，占总组合比例极低，对整体影响微乎其微。当前价格约$33.67，亏损幅度较大但绝对金额小，保持观察即可，无需特别关注。"
+    },
+    {
+      "id": "h008",
+      "ticker": "1810",
+      "exchange": "HK",
+      "name": "小米集团-W",
+      "market": "港股",
+      "sector": "互联网科技",
+      "shares": 400,
+      "avg_cost": 53.48,
+      "currency": "HKD",
+      "add_date": "2025-08-15",
+      "notes": "深度套牢，等待反弹",
+      "analysis": "7月是小米的强势月份，累计暴涨47.3%，受益于多重催化：长鑫科技上市带动持股价值重估、小米澎程电动车技术发布会（7/30）、公司持续回购（7月多次回购380-390万股）。但用户成本53.48，现价28.78，仍深套约46%，需要股价再翻倍才能回本。电动车业务是潜在重大催化剂，但回报周期长，短期内更多是题材驱动。"
+    },
+    {
+      "id": "h009",
+      "ticker": "002078",
+      "exchange": "SZ",
+      "name": "太阳纸业",
+      "market": "A股",
+      "sector": "造纸",
+      "shares": 700,
+      "avg_cost": 14.934,
+      "currency": "CNY",
+      "add_date": "2026-03-10",
+      "notes": "造纸龙头",
+      "analysis": "太阳纸业是造纸行业龙头，近期股价从7月初低点12.72元反弹至14.56元，反弹幅度约14.5%。公司实施限制性股票激励计划，体现管理层信心。成本14.934，现价14.560，小幅亏损2.5%，基本面稳健，耐心持有等待估值修复。"
+    },
+    {
+      "id": "h010",
+      "ticker": "512690",
+      "exchange": "SH",
+      "name": "酒ETF",
+      "market": "A股",
+      "sector": "消费/白酒",
+      "shares": 23800,
+      "avg_cost": 0.562,
+      "currency": "CNY",
+      "add_date": "2026-01-20",
+      "notes": "白酒行业持续调整",
+      "analysis": "酒ETF跟踪白酒板块，受消费复苏不及预期、库存压力等因素影响，白酒行业持续调整。现价0.453，亏损19.39%。白酒板块处于周期底部区域，等待行业库存出清和消费复苏拐点信号，耐心持有或逢低分批补仓。"
+    },
+    {
+      "id": "h011",
+      "ticker": "513130",
+      "exchange": "SH",
+      "name": "恒指科技ETF",
+      "market": "A股",
+      "sector": "ETF/港股科技",
+      "shares": 21600,
+      "avg_cost": 0.734,
+      "currency": "CNY",
+      "add_date": "2026-04-10",
+      "notes": "港股科技跟踪",
+      "analysis": "恒指科技ETF跟踪恒生科技指数。7月港股科技股大幅反弹，小米、美团等权重股领涨，但ETF现价0.609仍亏损17.03%。港股科技板块估值处于历史低位，若市场情绪持续回暖，修复空间可观，继续持有等待。"
+    },
+    {
+      "id": "h012",
+      "ticker": "515880",
+      "exchange": "SH",
+      "name": "通信ETF",
+      "market": "A股",
+      "sector": "ETF/通信",
+      "shares": 1200,
+      "avg_cost": 0.917,
+      "currency": "CNY",
+      "add_date": "2026-03-05",
+      "notes": "大幅亏损，观察为主",
+      "analysis": "通信ETF跟踪通信板块，现价0.582，亏损36.53%，是组合中亏损比例最大的持仓之一。通信板块缺乏短期催化，5G建设高峰已过，AI算力通信需求尚未充分传导至板块。仓位已降至1,200股，绝对金额不大，观察为主，等待板块催化出现。"
+    },
+    {
+      "id": "h013",
+      "ticker": "588060",
+      "exchange": "SH",
+      "name": "科创50ETF广发",
+      "market": "A股",
+      "sector": "ETF/科创板",
+      "shares": 1000,
+      "avg_cost": 1.347,
+      "currency": "CNY",
+      "add_date": "2026-05-20",
+      "notes": "科创板观察",
+      "analysis": "科创50ETF广发（588060）跟踪科创50指数，现价1.040，成本1.347，亏损约22.8%。科创板整体承压，受制于流动性偏紧和风险偏好降低。但其中半导体、AI相关标的长期逻辑清晰，等待市场风格切换至成长股，耐心持有。"
+    },
+    {
+      "id": "h014",
+      "ticker": "600036",
+      "exchange": "SH",
+      "name": "招商银行",
+      "market": "A股",
+      "sector": "银行/金融",
+      "shares": 1200,
+      "avg_cost": 40.993,
+      "currency": "CNY",
+      "add_date": "2026-02-10",
+      "notes": "银行龙头，核心持仓",
+      "analysis": "招商银行是银行板块龙头，7/28盘中创60日新高（$40.02），近90天8家机构给出买入评级。7/31放量回落收于39.62，小幅亏损3.34%。基本面扎实，盈利能力突出，分红稳定，作为核心持仓继续持有。当前价位适合逢低加仓。"
+    },
+    {
+      "id": "h015",
+      "ticker": "CASH_CNY",
+      "exchange": "CASH",
+      "name": "人民币现金",
+      "market": "现金",
+      "sector": "现金",
+      "shares": 1,
+      "avg_cost": 4921.09,
+      "currency": "CNY",
+      "add_date": "2026-01-01",
+      "notes": "可用现金",
+      "analysis": "人民币现金储备，占组合一定比例，提供流动性缓冲。现金本身不产生收益，但在市场下跌时可作为抄底弹药。"
+    },
+    {
+      "id": "h016",
+      "ticker": "CASH_HKD",
+      "exchange": "CASH",
+      "name": "港币现金",
+      "market": "现金",
+      "sector": "现金",
+      "shares": 1,
+      "avg_cost": 3200,
+      "currency": "HKD",
+      "add_date": "2026-01-01",
+      "notes": "可用现金",
+      "analysis": "港币现金储备，折合人民币约2,752元。港股市场备用金，用于港股调仓或补仓操作。"
+    },
+    {
+      "id": "h017",
+      "ticker": "CASH_USD",
+      "exchange": "CASH",
+      "name": "美元现金",
+      "market": "现金",
+      "sector": "现金",
+      "shares": 1,
+      "avg_cost": 1740,
+      "currency": "USD",
+      "add_date": "2026-01-01",
+      "notes": "可用现金",
+      "analysis": "美元现金储备，折合人民币约11,736元。美股市场备用金，用于美股调仓或补仓操作，是组合中最大的现金仓位。"
+    }
+  ],
+  "transactions": [],
+  "price_history": {
+    "2026-08-01": {
+      "002078.SZ": {
+        "price": 14.56,
+        "change_pct": -0.68
+      },
+      "512690.SH": {
+        "price": 0.453,
+        "change_pct": 0.22
+      },
+      "513130.SH": {
+        "price": 0.6,
+        "change_pct": 0.33
+      },
+      "515880.SH": {
+        "price": 0.582,
+        "change_pct": 4.86
+      },
+      "588060.SH": {
+        "price": 1.04,
+        "change_pct": 3.48
+      },
+      "600036.SH": {
+        "price": 39.62,
+        "change_pct": -2.29
+      },
+      "1810.HK": {
+        "price": 28.78,
+        "change_pct": -7.28
+      },
+      "VT": {
+        "price": 155.86,
+        "change_pct": 0.26
+      },
+      "DIA": {
+        "price": 524.32,
+        "change_pct": 0.54
+      },
+      "LLY": {
+        "price": 1148.84,
+        "change_pct": -0.53
+      },
+      "VRT": {
+        "price": 241.57,
+        "change_pct": 6.18
+      },
+      "OKTA": {
+        "price": 141.93,
+        "change_pct": 1.08
+      },
+      "SKHY": {
+        "price": 143.73,
+        "change_pct": -3.54
+      },
+      "VCX": {
+        "price": 33.0,
+        "change_pct": -6.09
+      }
+    }
+  }
+}
