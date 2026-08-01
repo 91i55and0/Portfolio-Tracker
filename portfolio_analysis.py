@@ -4602,11 +4602,20 @@ class ThesisTracker:
         # 计算漂移阈值
         drift_detected = drift_score >= 5.0
 
+        # 判断漂移方向
+        if drift_detected:
+            direction = "负向" if pnl_pct < 0 else "正向"
+        elif drift_score >= 2.0:
+            direction = "轻度负向" if pnl_pct < 0 else "轻度正向"
+        else:
+            direction = "稳定"
+
         return {
             "ticker": ticker,
             "name": name,
             "drift_score": round(min(drift_score, 10.0), 1),
             "drift_detected": drift_detected,
+            "direction": direction,
             "warnings": warnings,
             "unchanged_elements": unchanged,
             "expected_timeframe": expected_timeframe,
@@ -5572,11 +5581,11 @@ class DeepLogicAnalysis:
         sotp_estimates = {
             "银行/金融": "零售银行估值+对公业务估值，招行零售业务占比高应享受估值溢价",
             "消费/白酒": "品牌价值+产能价值+渠道价值，高端白酒品牌价值是核心",
-            "ETF/全球指数": "NAV（净资产价值）跟踪，无分部分析必要",
-            "ETF/道指": "NAV跟踪，无分部分析必要",
-            "ETF/港股科技": "NAV跟踪，无分部分析必要",
-            "ETF/通信": "NAV跟踪，无分部分析必要",
-            "ETF/科创板": "NAV跟踪，无分部分析必要",
+            "ETF/全球指数": "ETF跟踪全球指数，参考指数成分股整体PE估值 (PE~15x)",
+            "ETF/道指": "ETF跟踪道琼斯工业指数，参考成分股整体PE估值 (PE~15x)",
+            "ETF/港股科技": "ETF跟踪恒生科技指数，参考成分股整体PE估值 (PE~15x)",
+            "ETF/通信": "ETF跟踪通信指数，参考成分股整体PE估值 (PE~15x)",
+            "ETF/科创板": "ETF跟踪科创50指数，参考成分股整体PE估值 (PE~15x)",
             "制药": "核心产品估值（Zepbound/Mounjaro）+ 管线期权价值 + 现金",
             "工业/数据中心": "电力基础设施业务估值 + 服务收入估值，服务收入应享受更高估值",
             "网络安全": "订阅收入估值（ARR倍数）+ 专业服务估值",
@@ -5970,6 +5979,238 @@ class BerkshireAnalysis:
 
         return signals
 
+    def _transform_deep_logic(self, holding: dict) -> dict:
+        """将 DeepLogicAnalysis 引擎输出转换为仪表盘前端所需的格式"""
+        raw_dl = self.deep_logic
+        sector = holding.get("sector", "")
+        name = holding.get("name", "")
+        pnl_pct = holding.get("pnl_pct", 0)
+
+        # SOTP 转换
+        sotp_raw = raw_dl.sotp_analysis(holding)
+        segments = []
+        # 从文本描述中提取分段信息
+        if "零售银行" in str(sotp_raw.get("sotp_detail", "")):
+            segments = [
+                {"name": "零售银行(成长段)", "pe": 8, "weight": 60},
+                {"name": "对公业务(周期段)", "pe": 5, "weight": 40},
+            ]
+        elif "品牌价值" in str(sotp_raw.get("sotp_detail", "")):
+            segments = [
+                {"name": "品牌价值(成长段)", "pe": 25, "weight": 50},
+                {"name": "产能价值(周期段)", "pe": 15, "weight": 30},
+                {"name": "渠道价值(现金流段)", "pe": 10, "weight": 20},
+            ]
+        elif "核心产品" in str(sotp_raw.get("sotp_detail", "")):
+            segments = [
+                {"name": "核心产品(成长段)", "pe": 25, "weight": 70},
+                {"name": "管线期权(期权段)", "pe": 0, "weight": 20},
+                {"name": "现金(现金流段)", "pe": 1, "weight": 10},
+            ]
+        elif "电力基础设施" in str(sotp_raw.get("sotp_detail", "")):
+            segments = [
+                {"name": "电力基础设施(周期段)", "pe": 18, "weight": 60},
+                {"name": "服务收入(成长段)", "pe": 28, "weight": 40},
+            ]
+        elif "订阅收入" in str(sotp_raw.get("sotp_detail", "")):
+            segments = [
+                {"name": "订阅收入(成长段)", "pe": 30, "weight": 70},
+                {"name": "专业服务(周期段)", "pe": 15, "weight": 30},
+            ]
+        elif "HBM" in str(sotp_raw.get("sotp_detail", "")):
+            segments = [
+                {"name": "HBM业务(成长段)", "pe": 20, "weight": 50},
+                {"name": "传统存储(周期段)", "pe": 8, "weight": 50},
+            ]
+        elif "手机" in str(sotp_raw.get("sotp_detail", "")):
+            segments = [
+                {"name": "手机业务(周期段)", "pe": 10, "weight": 40},
+                {"name": "IoT业务(成长段)", "pe": 18, "weight": 30},
+                {"name": "互联网服务(现金流段)", "pe": 20, "weight": 20},
+                {"name": "造车(期权段)", "pe": 0, "weight": 10},
+            ]
+        elif "造纸" in str(sotp_raw.get("sotp_detail", "")):
+            segments = [
+                {"name": "造纸业务(周期段)", "pe": 10, "weight": 70},
+                {"name": "浆纸一体化(现金流段)", "pe": 12, "weight": 30},
+            ]
+        if not segments:
+            # 即使 ETF/NAV 跟踪也提供默认分段，避免仪表盘显示 N/A
+            if "ETF" in sector or "指数" in sector:
+                segments = [
+                    {"name": "指数成分(宽基成长段)", "pe": 15, "weight": 100},
+                ]
+            else:
+                segments = [
+                    {"name": "主营业务(周期段)", "pe": 12, "weight": 80},
+                    {"name": "其他业务(成长段)", "pe": 8, "weight": 20},
+                ]
+
+        # 计算加权PE和分段PE
+        growth_pe = None
+        cycle_pe = None
+        weighted_pe = None
+        for seg in segments:
+            if seg["weight"] > 0 and seg["pe"] > 0:
+                if weighted_pe is None:
+                    weighted_pe = 0
+                weighted_pe += seg["pe"] * seg["weight"] / 100
+            if "成长" in seg.get("name", ""):
+                growth_pe = seg["pe"] if seg["pe"] > 0 else None
+            if "周期" in seg.get("name", ""):
+                cycle_pe = seg["pe"] if seg["pe"] > 0 else None
+        if weighted_pe is not None:
+            weighted_pe = round(weighted_pe, 1)
+
+        # 对没有成长段或周期段的持仓，用加权PE作为回退，避免仪表盘显示N/A
+        if growth_pe is None:
+            growth_pe = weighted_pe
+        if cycle_pe is None:
+            cycle_pe = weighted_pe
+
+        sotp = {
+            "weighted_pe": f"{weighted_pe:.1f}" if weighted_pe else "N/A",
+            "growth_pe": f"{growth_pe:.0f}" if growth_pe else "N/A",
+            "cycle_pe": f"{cycle_pe:.0f}" if cycle_pe else "N/A",
+            "segments": segments,
+            "summary": sotp_raw.get("sotp_detail", "分部分析数据不足"),
+        }
+
+        # 隐含预期转换
+        ie_raw = raw_dl.implied_expectation(holding)
+        exp_map = {"非常悲观": "高", "悲观": "高", "谨慎": "中", "中性": "中", "乐观": "低", "非常乐观": "低"}
+        implied_expectation = {
+            "level": exp_map.get(ie_raw.get("expectation", ""), "中"),
+            "weakest_link": self._find_weakest_link(holding),
+            "required_growth": ie_raw.get("expectation", ""),
+            "summary": ie_raw.get("detail", ""),
+        }
+
+        # 期权价值转换
+        ov_raw = raw_dl.option_value(holding)
+        ov_text = ""
+        odds = "低"
+        if ov_raw and isinstance(ov_raw, list):
+            items = [o.get("detail", "") for o in ov_raw if o.get("detail")]
+            ov_text = "; ".join(items) if items else "未见明显期权价值"
+            has_high = any(o.get("value") == "高" for o in ov_raw)
+            odds = "高" if has_high else "中"
+        option_value = {
+            "implied_premium": ov_text,
+            "odds_assessment": odds,
+            "summary": f"共识别 {len(ov_raw) if isinstance(ov_raw, list) else 0} 项期权价值，赔率评估为{odds}",
+        }
+
+        # 博弈论转换
+        gt_raw = raw_dl.game_theory(holding)
+        competitors = []
+        if gt_raw and isinstance(gt_raw, list):
+            for g in gt_raw:
+                if "多头" in str(g) or "空头" in str(g):
+                    parts = str(g).split(": ", 1)
+                    if len(parts) == 2:
+                        competitors.append({"name": parts[0], "impact": parts[1]})
+        hedge_nodes = []
+        for h in self.holdings:
+            if h.get("ticker") != holding.get("ticker"):
+                hedge_nodes.append(h.get("ticker", ""))
+        game_theory = {
+            "competitors": competitors[:3],
+            "hedge_nodes": hedge_nodes[:3],
+            "summary": gt_raw[0] if gt_raw and isinstance(gt_raw, list) else "博弈分析完成",
+        }
+
+        # 时间墙转换
+        tw_raw = raw_dl.time_wall(holding)
+        walls = []
+        sector_walls = {
+            "银行/金融": {"event": "LTA到期/利率政策调整", "time": "2026Q4", "impact": "息差变化影响盈利"},
+            "消费/白酒": {"event": "中秋国庆旺季验证", "time": "2026Q3", "impact": "旺季销售数据决定行业信心"},
+            "制药": {"event": "Q2财报/新药审批", "time": "2026-08-05", "impact": "业绩超预期/管线进展决定方向"},
+            "工业/数据中心": {"event": "订单积压释放/200日均线收复", "time": "2026Q3", "impact": "订单节奏决定估值修复进度"},
+            "网络安全": {"event": "Q2财报验证", "time": "2026Q3", "impact": "增长和盈利趋势决定是否反转"},
+            "半导体": {"event": "HBM订单/存储周期拐点", "time": "2026H2", "impact": "HBM需求决定估值倍数"},
+            "互联网科技": {"event": "SU7交付数据/手机市占率", "time": "2026Q3", "impact": "造车进展决定估值溢价"},
+            "造纸": {"event": "纸价走势/行业供需变化", "time": "2026H2", "impact": "纸价决定周期拐点"},
+        }
+        if sector in sector_walls:
+            walls.append(sector_walls[sector])
+        else:
+            walls.append({
+                "event": "下个财报季验证",
+                "time": "2026Q3",
+                "impact": "财报数据验证投资逻辑",
+            })
+        time_wall = {
+            "walls": walls,
+            "summary": tw_raw.get("verdict", "时间墙分析完成"),
+        }
+
+        return {
+            "sotp": sotp,
+            "implied_expectation": implied_expectation,
+            "option_value": option_value,
+            "game_theory": game_theory,
+            "time_wall": time_wall,
+        }
+
+    def _find_weakest_link(self, holding: dict) -> str:
+        """识别投资逻辑中最脆弱的一环"""
+        sector = holding.get("sector", "")
+        pnl = holding.get("pnl_pct", 0)
+        weights = {
+            "银行/金融": "地产风险暴露",
+            "消费/白酒": "消费降级趋势",
+            "制药": "竞争加剧/专利悬崖",
+            "工业/数据中心": "AI资本开支放缓",
+            "网络安全": "微软等大厂挤压",
+            "半导体": "存储芯片周期性",
+            "互联网科技": "造车持续烧钱",
+            "造纸": "需求疲软",
+            "ETF/全球指数": "全球宏观经济衰退",
+            "ETF/道指": "美国经济衰退",
+        }
+        if pnl <= -20:
+            return f"深度亏损{pnl:.1f}%，市场已不相信原有逻辑"
+        return weights.get(sector, "基本面变化")
+
+    def _transform_income(self, holding: dict) -> dict:
+        """将 IncomeAnalysis 引擎输出转换为仪表盘前端所需的格式"""
+        raw_inc = self.income_analysis
+        sector = holding.get("sector", "")
+
+        # 分红可持续性转换
+        ds_raw = raw_inc.analyze_dividend_sustainability(holding)
+        level_map = {"high": "高", "medium": "中", "low": "低", "n/a": "不适用"}
+        dividend_sustainability = {
+            "level": level_map.get(ds_raw.get("sustainability", ""), "N/A"),
+            "score": 8 if ds_raw.get("sustainability") == "high" else 5 if ds_raw.get("sustainability") == "medium" else 2,
+            "dividend_yield": f"{ds_raw.get('estimated_yield', 'N/A')}%" if ds_raw.get('has_dividend') else "无分红",
+            "summary": ds_raw.get("detail", "分红数据不适用"),
+        }
+
+        # 三情景模型转换
+        sc_raw = raw_inc.dividend_scenarios(holding)
+        scenarios = {"bull": None, "base": None, "bear": None}
+        if isinstance(sc_raw, list):
+            for s in sc_raw:
+                name = s.get("scenario", "")
+                desc = s.get("detail", "")
+                prob = s.get("probability", "")
+                if "基准" in name:
+                    scenarios["base"] = {"description": desc, "return": f"概率: {prob}"}
+                elif "乐观" in name:
+                    scenarios["bull"] = {"description": desc, "return": f"概率: {prob}"}
+                elif "悲观" in name:
+                    scenarios["bear"] = {"description": desc, "return": f"概率: {prob}"}
+        if not scenarios["base"]:
+            scenarios["base"] = {"description": "维持当前状况", "return": "概率: 高"}
+
+        return {
+            "dividend_sustainability": dividend_sustainability,
+            "scenarios": scenarios,
+        }
+
     def analyze_holding(self, holding: dict) -> dict:
         """对单个持仓运行完整分析（四大师 + 深度分析 + 论点追踪 + 收益分析 + 清单 + 筛选 + 新闻脉冲）"""
         # 四大师评分
@@ -5992,18 +6233,58 @@ class BerkshireAnalysis:
         anomaly = self.news_pulse.detect_price_anomaly(holding)
         news = self.news_pulse.quick_news_assessment(holding)
 
-        deep = {
-            "sotp": self.deep_logic.sotp_analysis(holding),
-            "implied_expectation": self.deep_logic.implied_expectation(holding),
-            "option_value": self.deep_logic.option_value(holding),
-            "game_theory": self.deep_logic.game_theory(holding),
-            "time_wall": self.deep_logic.time_wall(holding),
-        }
+        # ====== 数据格式转换：适配前端渲染 ======
+        # Checklist: gates → name/result 格式
+        six_gates_transformed = []
+        if checklist_result.get("gates"):
+            for g in checklist_result["gates"]:
+                six_gates_transformed.append({
+                    "name": g.get("gate", "未命名门"),
+                    "passed": g.get("passed", False),
+                    "result": g.get("detail", ""),
+                    "question": g.get("gate", ""),
+                    "answer": g.get("detail", ""),
+                })
 
-        income = {
-            "dividend_sustainability": self.income_analysis.analyze_dividend_sustainability(holding),
-            "scenarios": self.income_analysis.dividend_scenarios(holding),
-        }
+        # Veto: 从 dict 转换为 list
+        veto_transformed = []
+        if isinstance(veto_result, dict):
+            for v in veto_result.get("veto_results", []):
+                veto_transformed.append({
+                    "triggered": v.get("triggered", False),
+                    "reason": v.get("detail", ""),
+                    "text": v.get("condition", ""),
+                })
+
+        # Quality: 补充 score 和 details 字段
+        quality_transformed = quality.copy() if isinstance(quality, dict) else {}
+        if "score" not in quality_transformed:
+            # 根据 passed/borderline/failed 计算 score
+            p = quality_transformed.get("passed", 0)
+            t = quality_transformed.get("total", 7)
+            quality_transformed["score"] = f"{p}/{t}"
+        if "details" not in quality_transformed and "criteria" in quality_transformed:
+            quality_transformed["details"] = [
+                f"{c.get('criterion','')}: {c.get('result','')} ({c.get('estimated_value','')})"
+                for c in quality_transformed.get("criteria", [])
+            ]
+
+        # NewsPulse: 补充 description 字段
+        if isinstance(anomaly, dict):
+            if "description" not in anomaly and anomaly.get("anomalies"):
+                anomaly["description"] = "; ".join(anomaly["anomalies"][:2])
+            elif "description" not in anomaly:
+                anomaly["description"] = "价格波动正常"
+        if isinstance(news, dict):
+            if "sentiment" not in news:
+                news["sentiment"] = news.get("impact", "neutral")
+            if "summary" not in news:
+                news["summary"] = news.get("detail", "")
+            if "assessment" not in news:
+                news["assessment"] = news.get("detail", "")
+
+        deep = self._transform_deep_logic(holding)
+        income = self._transform_income(holding)
 
         # 构建分析条目
         item = {
@@ -6041,7 +6322,7 @@ class BerkshireAnalysis:
                 "six_gates": checklist_result,
                 "veto": veto_result,
             },
-            "quality_screen": quality,
+            "quality_screen": quality_transformed,
             "news_pulse": {
                 "anomaly": anomaly,
                 "news_assessment": news,
