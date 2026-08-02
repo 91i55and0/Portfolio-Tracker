@@ -174,7 +174,10 @@ def generate_dashboard(manager, output_path: str = None):
 * {{ margin: 0; padding: 0; box-sizing: border-box; }}
 body {{
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'SF Pro Text', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
-    background: var(--bg-page);
+    background:
+        linear-gradient(rgba(243,245,248,0.88), rgba(243,245,248,0.88)),
+        url('bg_trader.png') no-repeat fixed right bottom / 50vh;
+    background-color: var(--bg-page);
     color: var(--text-primary);
     font-size: 13px;
     line-height: 1.5;
