@@ -144,10 +144,10 @@ def generate_dashboard(manager, output_path: str = None):
 <style>
 :root {{
     --bg-page: #f3f5f8;
-    --bg-card: rgba(255,255,255,0.82);
-    --bg-hover: rgba(240,242,245,0.85);
-    --bg-header: rgba(255,255,255,0.82);
-    --bg-sidebar: rgba(255,255,255,0.88);
+    --bg-card: rgba(255,255,255,0.72);
+    --bg-hover: rgba(240,242,245,0.78);
+    --bg-header: rgba(255,255,255,0.72);
+    --bg-sidebar: rgba(255,255,255,0.80);
     --text-primary: #1a1a2e;
     --text-secondary: #5a6070;
     --text-muted: #8a90a0;
@@ -176,7 +176,7 @@ body {{
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'SF Pro Text', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
     background:
         linear-gradient(rgba(243,245,248,0.88), rgba(243,245,248,0.88)),
-        url('bg_trader.png') no-repeat fixed right bottom / 50vh;
+        url('bg_trader.png') no-repeat fixed center / cover;
     background-color: var(--bg-page);
     color: var(--text-primary);
     font-size: 13px;
