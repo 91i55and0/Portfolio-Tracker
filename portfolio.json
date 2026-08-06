@@ -1,12 +1,12 @@
 {
   "portfolio": {
     "name": "综合投资组合",
-    "cash_cny": 4921.09,
+    "cash_cny": 3441.79,
     "cash_hkd": 3200,
     "cash_usd": 1740,
     "base_currency": "CNY",
     "created_at": "2026-08-01",
-    "last_updated": "2026-08-01 15:35:24",
+    "last_updated": "2026-08-06 18:50:00",
     "risk_free_rate": 0.025
   },
   "holdings": [
@@ -129,12 +129,12 @@
       "name": "太阳纸业",
       "market": "A股",
       "sector": "造纸",
-      "shares": 700,
-      "avg_cost": 14.934,
+      "shares": 800,
+      "avg_cost": 14.793,
       "currency": "CNY",
       "add_date": "2026-03-10",
-      "notes": "造纸龙头",
-      "analysis": "太阳纸业是造纸行业龙头，近期股价从7月初低点12.72元反弹至14.56元，反弹幅度约14.5%。公司实施限制性股票激励计划，体现管理层信心。成本14.934，现价14.560，小幅亏损2.5%，基本面稳健，耐心持有等待估值修复。"
+      "notes": "造纸龙头，8/6加仓100股",
+      "analysis": "太阳纸业是造纸行业龙头，公司实施限制性股票激励计划体现管理层信心。8/6加仓100股，成本降至14.793，现价约13.90，小幅亏损约6.0%。造纸行业处于周期底部，待需求回暖后估值修复空间可观，耐心持有。"
     },
     {
       "id": "h010",
@@ -214,7 +214,7 @@
       "market": "现金",
       "sector": "现金",
       "shares": 1,
-      "avg_cost": 4921.09,
+      "avg_cost": 3441.79,
       "currency": "CNY",
       "add_date": "2026-01-01",
       "notes": "可用现金",
@@ -307,6 +307,64 @@
       "VCX": {
         "price": 33.0,
         "change_pct": -6.09
+      }
+    },
+    "2026-08-06": {
+      "002078.SZ": {
+        "price": 13.9,
+        "change_pct": -1.49
+      },
+      "512690.SH": {
+        "price": 0.434,
+        "change_pct": -0.69
+      },
+      "513130.SH": {
+        "price": 0.601,
+        "change_pct": -2.28
+      },
+      "515880.SH": {
+        "price": 0.652,
+        "change_pct": 1.56
+      },
+      "588060.SH": {
+        "price": 1.078,
+        "change_pct": 0.28
+      },
+      "600036.SH": {
+        "price": 38.97,
+        "change_pct": 0.08
+      },
+      "1810.HK": {
+        "price": 26.86,
+        "change_pct": -2.82
+      },
+      "VT": {
+        "price": 160.17,
+        "change_pct": -0.17
+      },
+      "DIA": {
+        "price": 542.81,
+        "change_pct": 0.44
+      },
+      "LLY": {
+        "price": 1169.86,
+        "change_pct": 4.86
+      },
+      "VRT": {
+        "price": 277.94,
+        "change_pct": 2.97
+      },
+      "OKTA": {
+        "price": 147.04,
+        "change_pct": -0.53
+      },
+      "SKHY": {
+        "price": 151.03,
+        "change_pct": -2.17
+      },
+      "VCX": {
+        "price": 33.0,
+        "change_pct": -5.69
       }
     }
   }
