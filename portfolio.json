@@ -1,12 +1,12 @@
 {
   "portfolio": {
     "name": "综合投资组合",
-    "cash_cny": 3441.79,
+    "cash_cny": 3540.49,
     "cash_hkd": 3200,
     "cash_usd": 1740,
     "base_currency": "CNY",
     "created_at": "2026-08-01",
-    "last_updated": "2026-08-06 18:50:00",
+    "last_updated": "2026-08-06 19:10:00",
     "risk_free_rate": 0.025
   },
   "holdings": [
@@ -214,7 +214,7 @@
       "market": "现金",
       "sector": "现金",
       "shares": 1,
-      "avg_cost": 3441.79,
+      "avg_cost": 3540.49,
       "currency": "CNY",
       "add_date": "2026-01-01",
       "notes": "可用现金",
